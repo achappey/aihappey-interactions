@@ -45,29 +45,17 @@ public sealed class InteractionRequest
     [JsonPropertyName("continuation_token")]
     public string? ContinuationToken { get; set; }
 
-    [JsonPropertyName("cached_content")]
-    [Obsolete("Google marks cached_content as deprecated in the current Interactions API schema.")]
-    public string? CachedContent { get; set; }
-
     [JsonPropertyName("environment")]
     public InteractionEnvironmentValue? Environment { get; set; }
 
     [JsonPropertyName("labels")]
     public Dictionary<string, string>? Labels { get; set; }
 
-    [JsonPropertyName("response_mime_type")]
-    [Obsolete("Use ResponseFormat; Google marks response_mime_type as deprecated.")]
-    public string? ResponseMimeType { get; set; }
-
     [JsonPropertyName("safety_settings")]
     public List<InteractionSafetySetting>? SafetySettings { get; set; }
 
     [JsonPropertyName("webhook_config")]
     public InteractionWebhookConfig? WebhookConfig { get; set; }
-
-    [JsonPropertyName("response_modalities")]
-    [Obsolete("Use ResponseFormat; Google marks response_modalities as deprecated.")]
-    public List<string>? ResponseModalities { get; set; }
 
     [JsonPropertyName("service_tier")]
     public string? ServiceTier { get; set; }
@@ -112,10 +100,6 @@ public sealed class Interaction
     [JsonPropertyName("usage")]
     public InteractionUsage? Usage { get; set; }
 
-    [JsonPropertyName("response_modalities")]
-    [Obsolete("Use ResponseFormat; Google marks response_modalities as deprecated.")]
-    public List<string>? ResponseModalities { get; set; }
-
     [JsonPropertyName("response_format")]
     public InteractionResponseFormats? ResponseFormat { get; set; }
 
@@ -124,10 +108,6 @@ public sealed class Interaction
 
     [JsonPropertyName("continuation_token")]
     public string? ContinuationToken { get; set; }
-
-    [JsonPropertyName("cached_content")]
-    [Obsolete("Google marks cached_content as deprecated in the current Interactions API schema.")]
-    public string? CachedContent { get; set; }
 
     [JsonPropertyName("environment")]
     public InteractionEnvironmentValue? Environment { get; set; }
@@ -140,10 +120,6 @@ public sealed class Interaction
 
     [JsonPropertyName("labels")]
     public Dictionary<string, string>? Labels { get; set; }
-
-    [JsonPropertyName("response_mime_type")]
-    [Obsolete("Use ResponseFormat; Google marks response_mime_type as deprecated.")]
-    public string? ResponseMimeType { get; set; }
 
     [JsonPropertyName("safety_settings")]
     public List<InteractionSafetySetting>? SafetySettings { get; set; }

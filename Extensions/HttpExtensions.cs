@@ -16,7 +16,7 @@ public static class HttpExtensions
     };
 
     /// <summary>
-    /// POST JSON and deserialize JSON response into T (non-stream).
+    /// POST JSON and deserialize a steps-based interaction response.
     /// </summary>
     public static Task<Interaction> GetInteraction(
         this HttpClient client,
@@ -40,7 +40,6 @@ public static class HttpExtensions
         using var req = new HttpRequestMessage(HttpMethod.Post, relativeUrl);
         req.Headers.Accept.Clear();
         req.Headers.Accept.Add(AcceptJson);
-        req.Headers.TryAddWithoutValidation("Api-Revision", "2026-05-20");
         var payload = JsonSerializer.SerializeToElement(options, jsonOpts);
         req.Content = new StringContent(payload.GetRawText(), Encoding.UTF8, "application/json");
 
@@ -60,8 +59,7 @@ public static class HttpExtensions
     }
 
     /// <summary>
-    /// POST JSON with stream=true and parse SSE "data: {json}" events into TEvent.
-    /// Ends on "data: [DONE]".
+    /// POST JSON with stream=true and parse steps-based SSE events.
     /// </summary>
     public static IAsyncEnumerable<InteractionStreamEventPart> GetInteractions(
         this HttpClient client,
@@ -86,7 +84,6 @@ public static class HttpExtensions
 
         req.Headers.Accept.Clear();
         req.Headers.Accept.Add(AcceptSse);
-        req.Headers.TryAddWithoutValidation("Api-Revision", "2026-05-20");
         req.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
         var payload = JsonSerializer.SerializeToElement(options, jsonOpts);
 
@@ -108,8 +105,6 @@ public static class HttpExtensions
         while (!ct.IsCancellationRequested &&
                (line = await reader.ReadLineAsync(ct)) != null)
         {
-            if (line is null) yield break;
-
             if (line.Length == 0) continue; // keepalive
 
             if (!line.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
@@ -118,14 +113,13 @@ public static class HttpExtensions
             var data = line["data:".Length..].Trim();
             if (data.Length == 0) continue;
 
-            if (data == "[DONE]") yield break;
-
-            InteractionStreamEventPart? evt;
+            InteractionStreamEventPart evt;
             try
             {
-                evt = JsonSerializer.Deserialize<InteractionStreamEventPart>(data);
+                evt = JsonSerializer.Deserialize<InteractionStreamEventPart>(data)
+                    ?? throw new JsonException("Interaction stream event must be a non-null object.");
             }
-            catch (Exception ex)
+            catch (JsonException ex)
             {
                 throw new InvalidOperationException($"Failed to parse SSE json event: {data}", ex);
             }
@@ -140,8 +134,7 @@ public static class HttpExtensions
                 NormalizeInteractionModel(interactionStartEvent.Interaction, providerId);
             }
 
-            if (evt is not null)
-                yield return evt;
+            yield return evt;
         }
     }
 
@@ -173,6 +166,3 @@ public static class HttpExtensions
     }
 
 }
-
-
-

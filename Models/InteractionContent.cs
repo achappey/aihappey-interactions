@@ -120,11 +120,6 @@ public sealed class InteractionAudioContent : InteractionContent
     [JsonPropertyName("sample_rate")]
     public int? SampleRate { get; set; }
 
-    [JsonPropertyName("rate")]
-    [Obsolete("Use SampleRate, which matches the Interactions API field sample_rate.")]
-    [JsonIgnore]
-    public int? Rate { get; set; }
-
     [JsonPropertyName("channels")]
     public int? Channels { get; set; }
 }
@@ -170,19 +165,4 @@ public sealed class InteractionVideoContent : InteractionContent
 
     [JsonPropertyName("processing")]
     public InteractionVideoProcessing? Processing { get; set; }
-}
-
-[Obsolete("Thought is an interaction step, not a content block. Use InteractionThoughtStep.")]
-public sealed class InteractionThoughtContent : InteractionContent
-{
-    public InteractionThoughtContent()
-    {
-        Type = "thought";
-    }
-
-    [JsonPropertyName("signature")]
-    public string? Signature { get; set; }
-
-    [JsonPropertyName("summary")]
-    public List<InteractionContent>? Summary { get; set; }
 }

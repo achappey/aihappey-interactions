@@ -1,37 +1,40 @@
-# Interactions API compatibility
+# Interactions API contract
 
-This library models Google's Gemini Interactions API and leaves endpoint-version selection to callers. The API reference and versioning documentation were checked for both `v1` and `v1beta`; `v1` is the stable contract, while `v1beta` may expose preview capabilities. The DTOs model shared documented interaction shapes, preserve unrecognized fields and discriminator values, and do not claim that every optional feature is enabled on every API version or model.
+This library exclusively models Google's modern steps-based Gemini Interactions API. Requests default to `v1beta/interactions` without an `Api-Revision` header. Callers may provide `v1/interactions` through the same HTTP methods; there is no separate version-specific implementation, schema translation, or compatibility parser.
+
+Responses contain `steps`: user inputs, model outputs, thoughts, function calls, and tool results are top-level steps. Multimodal content belongs inside those steps. Stateless history uses `InteractionsInput(List<InteractionStep>)`; replay the steps unchanged to preserve call IDs, signatures, and provider metadata. Stateful continuation uses `previous_interaction_id` or `continuation_token`.
 
 References:
 
 - [Gemini Interactions API reference](https://ai.google.dev/api/interactions-api)
-- [Gemini API versions](https://ai.google.dev/gemini-api/docs/api-versions)
-- [Interactions API breaking-change migration guide](https://ai.google.dev/gemini-api/docs/interactions-breaking-changes-may-2026)
+- [Streaming interactions](https://ai.google.dev/gemini-api/docs/streaming)
 - [Google Gen AI Python SDK generated Interactions models](https://github.com/googleapis/python-genai/tree/main/google/genai/_gaos/types/interactions)
 
-## Breaking changes and consumer updates
+## Typed contract
 
-The following public property types have changed to represent the published JSON contracts rather than arbitrary CLR objects:
+| Member | Type | Usage |
+|---|---|---|
+| `InteractionRequest.ResponseFormat`, `Interaction.ResponseFormat` | `InteractionResponseFormats?` | Use typed text, image, audio, or video response formats. Construct one variant for an object, or a list for the array form. JSON schemas use `JsonElement`. |
+| `Interaction.Status`, `InteractionStatusEvent.Status` | `InteractionStatus?` | Read `.Value` for the wire value or `.KnownValue` for `InteractionStatusKind?`. Unknown status strings round-trip unchanged. |
+| `InteractionRequest.Environment`, `Interaction.Environment` | `InteractionEnvironmentValue?` | Use a string reference or `InteractionRemoteEnvironment` configuration. |
+| `InteractionRequest.WebhookConfig`, `Interaction.WebhookConfig` | `InteractionWebhookConfig?` | Use `Uris` and `UserMetadata`. |
+| `InteractionGenerationConfig.ToolChoice` | `InteractionToolChoiceValue?` | Use a mode string or `InteractionToolChoiceConfiguration` with `AllowedTools`. |
+| `InteractionVideoContent.Processing`, `InteractionTranscriptionConfig.Mode` | `InteractionVideoProcessing?`, `InteractionTranscriptionMode?` | Use the documented string mode or typed configuration variants. |
+| Tool parameter, call-argument, and result payloads | `JsonElement?` | Assign arbitrary JSON with `JsonSerializer.SerializeToElement`. MCP headers use `Dictionary<string, string>?`. |
+| `InteractionModelOutputStep.Error` | `InteractionModelOutputError?` | Read numeric RPC `Code`, `Message`, and structured `Details`, distinct from interaction-level `InteractionErrorInfo`. |
+| `InteractionStepDeltaEvent.Delta` | `InteractionContentDeltaData?` | Handle typed text, arguments, thought, multimodal, annotation, and function-result deltas. Other variants retain their JSON in `InteractionUnknownContentDeltaData`. |
+| `Interaction.Steps` | `List<InteractionStep>?` | Tool calls, results, and thoughts are top-level steps. Content blocks are text, image, audio, document, or video; thought steps contain summary content and signatures. |
 
-| Member | Previous type | Current type | Consumer update |
-|---|---|---|---|
-| `InteractionRequest.ResponseFormat`, `Interaction.ResponseFormat` | `object?` | `InteractionResponseFormats?` | Use a typed `InteractionTextResponseFormat`, `InteractionImageResponseFormat`, `InteractionAudioResponseFormat`, or `InteractionVideoResponseFormat`. Construct `InteractionResponseFormats` with one variant for an object, or a list for the array form. JSON schemas are represented by `JsonElement`. |
-| `Interaction.Status`, `InteractionStatusEvent.Status` | `string?` | `InteractionStatus?` | Read `.Value` for the wire value or `.KnownValue` for `InteractionStatusKind?`. Unknown future status strings remain available and round-trip unchanged. |
-| `InteractionRequest.Environment`, `Interaction.Environment` | `object?` | `InteractionEnvironmentValue?` | Use a string reference or `InteractionRemoteEnvironment` configuration. |
-| `InteractionRequest.WebhookConfig`, `Interaction.WebhookConfig` | `object?` | `InteractionWebhookConfig?` | Use the typed `Uris` and `UserMetadata` properties. |
-| `InteractionGenerationConfig.ToolChoice` | `object?` | `InteractionToolChoiceValue?` | Use a mode string or `InteractionToolChoiceConfiguration` with `AllowedTools`. |
-| `InteractionVideoContent.Processing`, `InteractionTranscriptionConfig.Mode` | `object?` | `InteractionVideoProcessing?`, `InteractionTranscriptionMode?` | Use the string mode or the typed discriminated configuration variants. |
-| Tool parameter, call-argument, and result payloads | `object?` | `JsonElement?` | Use `JsonSerializer.SerializeToElement` when assigning arbitrary JSON, and inspect the JSON value explicitly when reading it. MCP headers are now `Dictionary<string, string>?`. |
-| `InteractionModelOutputStep.Error` | `object?` | `InteractionModelOutputError?` | Read the numeric RPC `Code`, `Message`, and structured `Details`. This remains distinct from `InteractionErrorInfo` used by interaction-level diagnostics. |
-| `InteractionStepDeltaEvent.Delta` | concrete `InteractionContentDeltaData` | abstract discriminated union | Handle the typed text, arguments, thought, audio, image, video, document, and annotation delta variants; use `InteractionUnknownContentDeltaData` for unrecognized variants. Unknown members remain in `AdditionalProperties`. |
-| Tool-call/result and thought variants in `Interaction.Steps` | `Interaction*Content` | `Interaction*Step` | Handle these as top-level interaction steps. `InteractionContent` now represents only text, image, audio, document, and video blocks. Thought summaries are steps, not content. |
+Input accepts a string, a content block, content blocks, or steps. The role/content turn models, turn converters, thought content model, and unused step-selection constructor flags have been removed. Thoughts use `InteractionThoughtStep`. Unknown input arrays remain raw `JsonElement` values rather than being guessed into a known variant.
 
-`InteractionTurn` and the role/content input constructor remain temporarily available but are marked obsolete. Prefer a string, content block(s), or typed step(s), which are the current documented Interactions input forms. `InteractionThoughtContent` is also obsolete; deserialize thoughts as `InteractionThoughtStep`. Unsupported future input arrays are retained as `JsonElement` rather than being incorrectly deserialized as content blocks.
+## Streaming
 
-## Deprecated request fields
+Supported typed events are `interaction.created`, `interaction.status_update`, `step.start`, `step.delta`, `step.stop`, `interaction.completed`, and `error`, discriminated by `event_type`. Status changes, including `in_progress` and `requires_action`, are values of `interaction.status_update`, not separate event aliases. Step-stop events expose both `step_usage` and cumulative `usage`. Reasoning summaries, signatures, arguments, multimodal data, and usage metadata are preserved in step deltas.
 
-The current Google-generated Interactions model marks `cached_content`, `response_mime_type`, `response_modalities`, `temperature`, `top_p`, `image_config`, `audio.rate`, and several transcription settings as deprecated. Their DTO properties remain available and continue to serialize for compatibility, but now produce compiler warnings; prefer `response_format` for output modality/format configuration and `language_codes` in place of `language_hints`. Deprecation does not itself imply that a field is rejected by every server version.
+## Provider passthrough
 
-## Version scope and remaining limits
+Unrecognized members, discriminator values, tool payloads, and streaming delta variants round-trip without schema translation. `AdditionalProperties` and raw input retain provider-specific JSON; this does not imply support for legacy schemas. There is no typed `outputs` model or conversion from outputs to steps.
 
-The v1 and v1beta references do not provide a complete field-by-field feature-availability matrix for every model. Callers should select the version and model that support the desired capability; this library intentionally does not gate fields or silently remove version-specific payloads. Streaming deltas beyond the explicitly typed variants use the open unknown-delta representation and preserve their JSON for forward-compatible handling.
+Provider tool metadata uses the same modern tool converter as requests. Malformed or null tool definitions raise `JsonException` instead of being silently omitted.
+
+Deprecated configuration facades have been removed: `cached_content`, `response_mime_type`, `response_modalities`, `temperature`, `top_p`, `image_config`, `audio.rate`, and deprecated top-level transcription settings. Use `response_format`, `sample_rate`, `language_codes`, `custom_vocabulary`, and structured transcription `mode` settings where applicable. Explicit provider JSON can still pass through extension data; the library neither synthesizes nor translates deprecated fields. The documented object/array response-format and speech-configuration forms remain supported.

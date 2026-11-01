@@ -5,7 +5,7 @@ namespace AIHappey.Interactions;
 
 public sealed class InteractionContentJsonConverter : JsonConverter<InteractionContent>
 {
-    private static readonly Dictionary<string, Type> ContentTypes = new(StringComparer.OrdinalIgnoreCase)
+    internal static readonly Dictionary<string, Type> ContentTypes = new(StringComparer.OrdinalIgnoreCase)
     {
         ["text"] = typeof(InteractionTextContent),
         ["image"] = typeof(InteractionImageContent),
@@ -35,7 +35,7 @@ public sealed class InteractionContentJsonConverter : JsonConverter<InteractionC
  
 public sealed class InteractionStepJsonConverter : JsonConverter<InteractionStep>
 {
-    private static readonly Dictionary<string, Type> StepTypes = new(StringComparer.OrdinalIgnoreCase)
+    internal static readonly Dictionary<string, Type> StepTypes = new(StringComparer.OrdinalIgnoreCase)
     {
         ["user_input"] = typeof(InteractionUserInputStep),
         ["model_output"] = typeof(InteractionModelOutputStep),

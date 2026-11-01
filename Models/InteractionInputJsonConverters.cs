@@ -5,21 +5,6 @@ namespace AIHappey.Interactions;
 
 public sealed class InteractionsInputJsonConverter : JsonConverter<InteractionsInput>
 {
-    private static readonly HashSet<string> ContentTypes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "text", "image", "audio", "document", "video"
-    };
-
-    private static readonly HashSet<string> StepTypes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "user_input", "model_output", "thought", "function_call", "code_execution_call",
-        "url_context_call", "mcp_server_tool_call", "google_search_call", "file_search_call",
-        "google_maps_call", "function_result", "code_execution_result", "url_context_result",
-        "google_search_result", "mcp_server_tool_result", "file_search_result",
-        "google_maps_result", "retrieval_call", "retrieval_result", "processing_call",
-        "processing_result"
-    };
-
     public override InteractionsInput? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var doc = JsonDocument.ParseValue(ref reader);
@@ -29,7 +14,8 @@ public sealed class InteractionsInputJsonConverter : JsonConverter<InteractionsI
         {
             JsonValueKind.String => new InteractionsInput(root.GetString() ?? string.Empty),
             JsonValueKind.Object => root.TryGetProperty("type", out _)
-                ? new InteractionsInput(root.Deserialize<InteractionContent>(options) ?? new InteractionTextContent())
+                ? new InteractionsInput(root.Deserialize<InteractionContent>(options)
+                    ?? throw new JsonException("Interaction input content was empty."))
                 : new InteractionsInput(root.Clone()),
             JsonValueKind.Array => ParseArray(root, options),
             JsonValueKind.Null or JsonValueKind.Undefined => new InteractionsInput(),
@@ -63,14 +49,6 @@ public sealed class InteractionsInputJsonConverter : JsonConverter<InteractionsI
             return;
         }
 
-#pragma warning disable CS0618
-        if (value.IsTurns)
-        {
-            JsonSerializer.Serialize(writer, value.Turns, options);
-            return;
-        }
-#pragma warning restore CS0618
-
         if (value.IsRaw)
         {
             value.Raw!.Value.WriteTo(writer);
@@ -87,7 +65,6 @@ public sealed class InteractionsInputJsonConverter : JsonConverter<InteractionsI
 
         var isContent = true;
         var isSteps = true;
-        var isTurns = true;
         foreach (var item in root.EnumerateArray())
         {
             if (item.ValueKind == JsonValueKind.Object &&
@@ -95,72 +72,24 @@ public sealed class InteractionsInputJsonConverter : JsonConverter<InteractionsI
                 typeProperty.ValueKind == JsonValueKind.String)
             {
                 var type = typeProperty.GetString()!;
-                isContent &= ContentTypes.Contains(type);
-                isSteps &= StepTypes.Contains(type);
+                isContent &= InteractionContentJsonConverter.ContentTypes.ContainsKey(type);
+                isSteps &= InteractionStepJsonConverter.StepTypes.ContainsKey(type);
             }
             else
             {
                 isContent = false;
                 isSteps = false;
             }
- 
-            if (item.ValueKind != JsonValueKind.Object || !item.TryGetProperty("role", out _) || !item.TryGetProperty("content", out _))
-            {
-                isTurns = false;
-            }
         }
  
         if (isSteps)
-            return new InteractionsInput(root.Deserialize<List<InteractionStep>>(options) ?? [], true);
-
-#pragma warning disable CS0618
-        if (isTurns)
-            return new InteractionsInput(root.Deserialize<List<InteractionTurn>>(options) ?? [], true);
-#pragma warning restore CS0618
+            return new InteractionsInput(root.Deserialize<List<InteractionStep>>(options)
+                ?? throw new JsonException("Interaction input steps were empty."));
 
         if (isContent)
-            return new InteractionsInput(root.Deserialize<List<InteractionContent>>(options) ?? []);
+            return new InteractionsInput(root.Deserialize<List<InteractionContent>>(options)
+                ?? throw new JsonException("Interaction input content was empty."));
 
         return new InteractionsInput(root.Clone());
-    }
-}
-
-public sealed class InteractionTurnContentJsonConverter : JsonConverter<InteractionTurnContent>
-{
-    public override InteractionTurnContent? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        using var doc = JsonDocument.ParseValue(ref reader);
-        var root = doc.RootElement;
-
-        return root.ValueKind switch
-        {
-            JsonValueKind.String => new InteractionTurnContent(root.GetString() ?? string.Empty),
-            JsonValueKind.Array => new InteractionTurnContent(root.Deserialize<List<InteractionContent>>(options) ?? []),
-            JsonValueKind.Null or JsonValueKind.Undefined => new InteractionTurnContent(),
-            _ => new InteractionTurnContent(root.Clone())
-        };
-    }
-
-    public override void Write(Utf8JsonWriter writer, InteractionTurnContent value, JsonSerializerOptions options)
-    {
-        if (value.IsText)
-        {
-            writer.WriteStringValue(value.Text);
-            return;
-        }
-
-        if (value.IsParts)
-        {
-            JsonSerializer.Serialize(writer, value.Parts, options);
-            return;
-        }
-
-        if (value.IsRaw)
-        {
-            value.Raw!.Value.WriteTo(writer);
-            return;
-        }
-
-        writer.WriteNullValue();
     }
 }
