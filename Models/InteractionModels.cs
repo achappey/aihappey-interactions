@@ -21,7 +21,7 @@ public sealed class InteractionRequest
     public List<InteractionTool>? Tools { get; set; }
 
     [JsonPropertyName("response_format")]
-    public object? ResponseFormat { get; set; }
+    public InteractionResponseFormats? ResponseFormat { get; set; }
 
     [JsonPropertyName("stream")]
     public bool? Stream { get; set; }
@@ -46,24 +46,27 @@ public sealed class InteractionRequest
     public string? ContinuationToken { get; set; }
 
     [JsonPropertyName("cached_content")]
+    [Obsolete("Google marks cached_content as deprecated in the current Interactions API schema.")]
     public string? CachedContent { get; set; }
 
     [JsonPropertyName("environment")]
-    public object? Environment { get; set; }
+    public InteractionEnvironmentValue? Environment { get; set; }
 
     [JsonPropertyName("labels")]
     public Dictionary<string, string>? Labels { get; set; }
 
     [JsonPropertyName("response_mime_type")]
+    [Obsolete("Use ResponseFormat; Google marks response_mime_type as deprecated.")]
     public string? ResponseMimeType { get; set; }
 
     [JsonPropertyName("safety_settings")]
     public List<InteractionSafetySetting>? SafetySettings { get; set; }
 
     [JsonPropertyName("webhook_config")]
-    public object? WebhookConfig { get; set; }
+    public InteractionWebhookConfig? WebhookConfig { get; set; }
 
     [JsonPropertyName("response_modalities")]
+    [Obsolete("Use ResponseFormat; Google marks response_modalities as deprecated.")]
     public List<string>? ResponseModalities { get; set; }
 
     [JsonPropertyName("service_tier")]
@@ -89,7 +92,7 @@ public sealed class Interaction
     public string? Id { get; set; }
 
     [JsonPropertyName("status")]
-    public string? Status { get; set; }
+    public InteractionStatus? Status { get; set; }
 
     [JsonPropertyName("created")]
     public string? Created { get; set; }
@@ -110,10 +113,11 @@ public sealed class Interaction
     public InteractionUsage? Usage { get; set; }
 
     [JsonPropertyName("response_modalities")]
+    [Obsolete("Use ResponseFormat; Google marks response_modalities as deprecated.")]
     public List<string>? ResponseModalities { get; set; }
 
     [JsonPropertyName("response_format")]
-    public object? ResponseFormat { get; set; }
+    public InteractionResponseFormats? ResponseFormat { get; set; }
 
     [JsonPropertyName("previous_interaction_id")]
     public string? PreviousInteractionId { get; set; }
@@ -122,10 +126,11 @@ public sealed class Interaction
     public string? ContinuationToken { get; set; }
 
     [JsonPropertyName("cached_content")]
+    [Obsolete("Google marks cached_content as deprecated in the current Interactions API schema.")]
     public string? CachedContent { get; set; }
 
     [JsonPropertyName("environment")]
-    public object? Environment { get; set; }
+    public InteractionEnvironmentValue? Environment { get; set; }
 
     [JsonPropertyName("environment_id")]
     public string? EnvironmentId { get; set; }
@@ -137,13 +142,14 @@ public sealed class Interaction
     public Dictionary<string, string>? Labels { get; set; }
 
     [JsonPropertyName("response_mime_type")]
+    [Obsolete("Use ResponseFormat; Google marks response_mime_type as deprecated.")]
     public string? ResponseMimeType { get; set; }
 
     [JsonPropertyName("safety_settings")]
     public List<InteractionSafetySetting>? SafetySettings { get; set; }
 
     [JsonPropertyName("webhook_config")]
-    public object? WebhookConfig { get; set; }
+    public InteractionWebhookConfig? WebhookConfig { get; set; }
 
     [JsonPropertyName("service_tier")]
     public string? ServiceTier { get; set; }

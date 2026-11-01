@@ -15,7 +15,14 @@ public static class InteractionJson
             new InteractionTurnContentJsonConverter(),
             new InteractionStepJsonConverter(),
             new InteractionContentJsonConverter(),
+            new InteractionContentDeltaJsonConverter(),
             new InteractionToolJsonConverter(),
+            new InteractionResponseFormatJsonConverter(),
+            new InteractionResponseFormatsJsonConverter(),
+            new InteractionEnvironmentValueJsonConverter(),
+            new InteractionToolChoiceValueJsonConverter(),
+            new InteractionVideoProcessingJsonConverter(),
+            new InteractionTranscriptionModeJsonConverter(),
             new InteractionAgentConfigJsonConverter(),
             new InteractionStreamEventJsonConverter()
         }

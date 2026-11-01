@@ -85,7 +85,7 @@ public sealed class InteractionFunctionTool : InteractionTool
     public string? Description { get; set; }
 
     [JsonPropertyName("parameters")]
-    public object? Parameters { get; set; }
+    public JsonElement? Parameters { get; set; }
 }
 
 public sealed class InteractionCodeExecutionTool : InteractionTool
@@ -138,7 +138,7 @@ public sealed class InteractionMcpServerTool : InteractionTool
     public string? Url { get; set; }
 
     [JsonPropertyName("headers")]
-    public object? Headers { get; set; }
+    public Dictionary<string, string>? Headers { get; set; }
 
     [JsonPropertyName("allowed_tools")]
     public List<InteractionAllowedTools>? AllowedTools { get; set; }

@@ -12,6 +12,17 @@ public abstract class InteractionStep
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
 }
+
+public sealed class InteractionThoughtStep : InteractionStep
+{
+    public InteractionThoughtStep() => Type = "thought";
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+
+    [JsonPropertyName("summary")]
+    public List<InteractionContent>? Summary { get; set; }
+}
  
 public sealed class InteractionUserInputStep : InteractionStep
 {
@@ -35,7 +46,7 @@ public sealed class InteractionModelOutputStep : InteractionStep
     public List<InteractionContent>? Content { get; set; }
 
     [JsonPropertyName("error")]
-    public object? Error { get; set; }
+    public InteractionModelOutputError? Error { get; set; }
 }
  
 public sealed class InteractionUnknownStep : InteractionStep
@@ -43,8 +54,13 @@ public sealed class InteractionUnknownStep : InteractionStep
 }
  
 [JsonConverter(typeof(InteractionContentJsonConverter))]
-public abstract class InteractionContent : InteractionStep
+public abstract class InteractionContent
 {
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = default!;
+
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
 }
 
 public sealed class InteractionUnknownContent : InteractionContent
@@ -153,9 +169,10 @@ public sealed class InteractionVideoContent : InteractionContent
     public string? Name { get; set; }
 
     [JsonPropertyName("processing")]
-    public object? Processing { get; set; }
+    public InteractionVideoProcessing? Processing { get; set; }
 }
 
+[Obsolete("Thought is an interaction step, not a content block. Use InteractionThoughtStep.")]
 public sealed class InteractionThoughtContent : InteractionContent
 {
     public InteractionThoughtContent()
