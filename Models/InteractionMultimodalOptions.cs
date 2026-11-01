@@ -60,8 +60,10 @@ public sealed class InteractionVideoProcessingJsonConverter : JsonConverter<Inte
         if (root.ValueKind != JsonValueKind.Object)
             throw new JsonException("Video processing must be a string or an object.");
 
-        if (root.TryGetProperty("type", out var type) &&
-            string.Equals(type.GetString(), "static", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(
+                InteractionJson.ReadStringDiscriminator(root, "type"),
+                "static",
+                StringComparison.OrdinalIgnoreCase))
         {
             return new InteractionVideoProcessing(
                 root.Deserialize<InteractionStaticVideoProcessing>(options)
@@ -153,14 +155,12 @@ public sealed class InteractionTranscriptionModeJsonConverter : JsonConverter<In
         if (root.ValueKind != JsonValueKind.Object)
             throw new JsonException("Transcription mode must be a string or an object.");
 
-        var configurationType = root.TryGetProperty("type", out var type)
-            ? type.GetString()?.ToLowerInvariant() switch
-            {
-                "smart" => typeof(InteractionSmartTranscriptionMode),
-                "verbatim" => typeof(InteractionVerbatimTranscriptionMode),
-                _ => typeof(InteractionUnknownTranscriptionMode)
-            }
-            : typeof(InteractionUnknownTranscriptionMode);
+        var configurationType = InteractionJson.ReadStringDiscriminator(root, "type")?.ToLowerInvariant() switch
+        {
+            "smart" => typeof(InteractionSmartTranscriptionMode),
+            "verbatim" => typeof(InteractionVerbatimTranscriptionMode),
+            _ => typeof(InteractionUnknownTranscriptionMode)
+        };
 
         return new InteractionTranscriptionMode(
             (InteractionTranscriptionModeConfiguration?)JsonSerializer.Deserialize(

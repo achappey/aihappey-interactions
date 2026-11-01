@@ -271,6 +271,197 @@ public sealed class InteractionFunctionResultDeltaData : InteractionContentDelta
     public string? Name { get; set; }
 }
 
+public sealed class InteractionCodeExecutionCallDeltaData : InteractionContentDeltaData
+{
+    public InteractionCodeExecutionCallDeltaData() => Type = "code_execution_call";
+
+    [JsonPropertyName("arguments")]
+    public InteractionCodeExecutionCallArguments? Arguments { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionCodeExecutionResultDeltaData : InteractionContentDeltaData
+{
+    public InteractionCodeExecutionResultDeltaData() => Type = "code_execution_result";
+
+    [JsonPropertyName("result")]
+    public string? Result { get; set; }
+
+    [JsonPropertyName("is_error")]
+    public bool? IsError { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionFileSearchCallDeltaData : InteractionContentDeltaData
+{
+    public InteractionFileSearchCallDeltaData() => Type = "file_search_call";
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionFileSearchResultDeltaData : InteractionContentDeltaData
+{
+    public InteractionFileSearchResultDeltaData() => Type = "file_search_result";
+
+    [JsonPropertyName("result")]
+    public List<InteractionFileSearchResult>? Result { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionGoogleMapsCallDeltaData : InteractionContentDeltaData
+{
+    public InteractionGoogleMapsCallDeltaData() => Type = "google_maps_call";
+
+    [JsonPropertyName("arguments")]
+    public InteractionGoogleMapsCallArguments? Arguments { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionGoogleMapsResultDeltaData : InteractionContentDeltaData
+{
+    public InteractionGoogleMapsResultDeltaData() => Type = "google_maps_result";
+
+    [JsonPropertyName("result")]
+    public List<InteractionGoogleMapsResult>? Result { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionGoogleSearchCallDeltaData : InteractionContentDeltaData
+{
+    public InteractionGoogleSearchCallDeltaData() => Type = "google_search_call";
+
+    [JsonPropertyName("arguments")]
+    public InteractionGoogleSearchCallArguments? Arguments { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionGoogleSearchResultDeltaData : InteractionContentDeltaData
+{
+    public InteractionGoogleSearchResultDeltaData() => Type = "google_search_result";
+
+    [JsonPropertyName("result")]
+    public List<InteractionGoogleSearchResult>? Result { get; set; }
+
+    [JsonPropertyName("is_error")]
+    public bool? IsError { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionMcpServerToolCallDeltaData : InteractionContentDeltaData
+{
+    public InteractionMcpServerToolCallDeltaData() => Type = "mcp_server_tool_call";
+
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("server_name")]
+    public string? ServerName { get; set; }
+
+    [JsonPropertyName("arguments")]
+    public JsonElement? Arguments { get; set; }
+
+    [JsonPropertyName("retrieval_type")]
+    public string? RetrievalType { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionMcpServerToolResultDeltaData : InteractionContentDeltaData
+{
+    public InteractionMcpServerToolResultDeltaData() => Type = "mcp_server_tool_result";
+
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("server_name")]
+    public string? ServerName { get; set; }
+
+    [JsonPropertyName("result")]
+    public JsonElement? Result { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionProcessingCallDeltaData : InteractionContentDeltaData
+{
+    public InteractionProcessingCallDeltaData() => Type = "processing_call";
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionProcessingResultDeltaData : InteractionContentDeltaData
+{
+    public InteractionProcessingResultDeltaData() => Type = "processing_result";
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionRetrievalCallDeltaData : InteractionContentDeltaData
+{
+    public InteractionRetrievalCallDeltaData() => Type = "retrieval_call";
+
+    [JsonPropertyName("arguments")]
+    public JsonElement? Arguments { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionRetrievalResultDeltaData : InteractionContentDeltaData
+{
+    public InteractionRetrievalResultDeltaData() => Type = "retrieval_result";
+
+    [JsonPropertyName("is_error")]
+    public bool? IsError { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionUrlContextCallDeltaData : InteractionContentDeltaData
+{
+    public InteractionUrlContextCallDeltaData() => Type = "url_context_call";
+
+    [JsonPropertyName("arguments")]
+    public InteractionUrlContextCallArguments? Arguments { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
+public sealed class InteractionUrlContextResultDeltaData : InteractionContentDeltaData
+{
+    public InteractionUrlContextResultDeltaData() => Type = "url_context_result";
+
+    [JsonPropertyName("result")]
+    public List<InteractionUrlContextResult>? Result { get; set; }
+
+    [JsonPropertyName("is_error")]
+    public bool? IsError { get; set; }
+
+    [JsonPropertyName("signature")]
+    public string? Signature { get; set; }
+}
+
 public sealed class InteractionUnknownContentDeltaData : InteractionContentDeltaData
 {
 }

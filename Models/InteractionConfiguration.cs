@@ -100,6 +100,20 @@ public sealed class InteractionDynamicAgentConfig : InteractionAgentConfig
     }
 }
 
+public sealed class InteractionAntigravityAgentConfig : InteractionAgentConfig
+{
+    public InteractionAntigravityAgentConfig()
+    {
+        Type = "antigravity";
+    }
+
+    [JsonPropertyName("max_total_tokens")]
+    public int? MaxTotalTokens { get; set; }
+
+    [JsonPropertyName("model")]
+    public string? Model { get; set; }
+}
+
 public sealed class InteractionUnknownAgentConfig : InteractionAgentConfig
 {
 }
@@ -113,4 +127,36 @@ public sealed class InteractionDeepResearchAgentConfig : InteractionAgentConfig
 
     [JsonPropertyName("thinking_summaries")]
     public string? ThinkingSummaries { get; set; }
+}
+
+public sealed class InteractionCodeMenderAgentConfig : InteractionAgentConfig
+{
+    public InteractionCodeMenderAgentConfig()
+    {
+        Type = "code-mender";
+    }
+
+    [JsonPropertyName("find_request")]
+    public JsonElement? FindRequest { get; set; }
+
+    [JsonPropertyName("fix_request")]
+    public JsonElement? FixRequest { get; set; }
+
+    [JsonPropertyName("model")]
+    public string? Model { get; set; }
+
+    [JsonPropertyName("session_config")]
+    public InteractionCodeMenderSessionConfig? SessionConfig { get; set; }
+
+    [JsonPropertyName("session_id")]
+    public string? SessionId { get; set; }
+}
+
+public sealed class InteractionCodeMenderSessionConfig
+{
+    [JsonPropertyName("max_rounds")]
+    public int? MaxRounds { get; set; }
+
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
 }

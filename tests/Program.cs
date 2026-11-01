@@ -14,6 +14,7 @@ var tests = new (string Name, Action Run)[]
     ("new and unknown content discriminators", ContentDiscriminators),
     ("tool discriminator and property names", ToolDiscriminators),
     ("provider tool metadata passthrough", ProviderToolMetadata),
+    ("current agent config variants", CurrentAgentConfigVariants),
     ("unknown agent config discriminator", UnknownAgentConfig),
     ("interaction status update event", StatusUpdateEvent),
     ("open interaction statuses", OpenInteractionStatuses),
@@ -312,6 +313,20 @@ static void ContentDiscriminators()
     using var futureInputRoundTrip = JsonDocument.Parse(
         JsonSerializer.Serialize(futureInput, InteractionJson.Default));
     True(futureInputRoundTrip.RootElement.GetProperty("input")[0].GetProperty("data").TryGetProperty("x", out _));
+
+    foreach (var malformed in new[] { "{}", """{"type":42}""", """{"type":null}""" })
+    {
+        Throws<JsonException>(() => JsonSerializer.Deserialize<InteractionStep>(malformed, InteractionJson.Default));
+        Throws<JsonException>(() => JsonSerializer.Deserialize<InteractionContent>(malformed, InteractionJson.Default));
+        Throws<JsonException>(() => JsonSerializer.Deserialize<InteractionTool>(malformed, InteractionJson.Default));
+        Throws<JsonException>(() => JsonSerializer.Deserialize<InteractionContentDeltaData>(
+            malformed,
+            InteractionJson.Default));
+    }
+
+    Throws<JsonException>(() => JsonSerializer.Deserialize<InteractionResponseFormat>(
+        """{"mime_type":"application/json"}""",
+        InteractionJson.Default));
 }
 
 static void ToolDiscriminators()
@@ -350,6 +365,46 @@ static void UnknownAgentConfig()
     True(serialized.RootElement.TryGetProperty("setting", out _));
 }
 
+static void CurrentAgentConfigVariants()
+{
+    var request = JsonSerializer.Deserialize<InteractionRequest>(
+        """
+        {"agent_config":{"type":"antigravity","model":"gemini-pro-latest","max_total_tokens":4096}}
+        """,
+        InteractionJson.Default)!;
+    var antigravity = (InteractionAntigravityAgentConfig)request.AgentConfig!;
+    Equal("gemini-pro-latest", antigravity.Model);
+    Equal(4096, antigravity.MaxTotalTokens);
+
+    request = JsonSerializer.Deserialize<InteractionRequest>(
+        """
+        {
+          "agent_config":{
+            "type":"code-mender",
+            "model":"gemini-pro-latest",
+            "session_id":"session-1",
+            "session_config":{"max_rounds":3,"future_round_option":true},
+            "find_request":{"query":"review source"},
+            "fix_request":{"file":"src/example.cs"}
+          }
+        }
+        """,
+        InteractionJson.Default)!;
+    var codeMender = (InteractionCodeMenderAgentConfig)request.AgentConfig!;
+    Equal("session-1", codeMender.SessionId);
+    Equal(3, codeMender.SessionConfig!.MaxRounds);
+    True(codeMender.SessionConfig.AdditionalProperties!["future_round_option"].GetBoolean());
+    Equal("review source", codeMender.FindRequest!.Value.GetProperty("query").GetString());
+    Equal("src/example.cs", codeMender.FixRequest!.Value.GetProperty("file").GetString());
+
+    using var roundTrip = JsonDocument.Parse(JsonSerializer.Serialize(request, InteractionJson.Default));
+    Equal("code-mender", roundTrip.RootElement.GetProperty("agent_config").GetProperty("type").GetString());
+    Equal(3, roundTrip.RootElement.GetProperty("agent_config").GetProperty("session_config")
+        .GetProperty("max_rounds").GetInt32());
+    True(roundTrip.RootElement.GetProperty("agent_config").GetProperty("find_request")
+        .GetProperty("query").ValueKind == JsonValueKind.String);
+}
+
 static void ProviderToolMetadata()
 {
     var providerJson = JsonSerializer.SerializeToElement(new
@@ -375,6 +430,7 @@ static void ProviderToolMetadata()
         metadata["google"] = document.RootElement.Clone();
         Throws<JsonException>(() => metadata.GetInteractionToolDefinitions("google"));
     }
+
 }
 
 static void StatusUpdateEvent()
@@ -437,7 +493,22 @@ static void TypedStreamingDeltas()
         (typeof(InteractionDocumentDeltaData), """{"type":"document","uri":"gs://bucket/doc.pdf","mime_type":"application/pdf","provider":{"x":1}}"""),
         (typeof(InteractionTextAnnotationDeltaData), """{"type":"text_annotation_delta","annotations":[{"type":"citation","url":"https://example.invalid","provider":true}],"provider":{"x":1}}"""),
         (typeof(InteractionFunctionResultDeltaData), """{"type":"function_result","name":"lookup","result":[{"type":"text","text":"Found"},{"type":"image","data":"AQID"}],"is_error":false,"provider":{"x":1}}"""),
-        (typeof(InteractionUnknownContentDeltaData), """{"type":"google_search_result","result":[{"url":"https://example.invalid","provider":true}],"provider":{"x":1}}""")
+        (typeof(InteractionGoogleSearchResultDeltaData), """{"type":"google_search_result","result":[{"url":"https://example.invalid","provider":true}],"is_error":false,"provider":{"x":1}}"""),
+        (typeof(InteractionCodeExecutionCallDeltaData), """{"type":"code_execution_call","arguments":{"language":"python","code":"print(1)"},"signature":"s","provider":true}"""),
+        (typeof(InteractionCodeExecutionResultDeltaData), """{"type":"code_execution_result","result":"1","is_error":false,"signature":"s","provider":true}"""),
+        (typeof(InteractionFileSearchCallDeltaData), """{"type":"file_search_call","signature":"s","provider":true}"""),
+        (typeof(InteractionFileSearchResultDeltaData), """{"type":"file_search_result","result":[{"text":"found","provider":true}],"signature":"s"}"""),
+        (typeof(InteractionGoogleMapsCallDeltaData), """{"type":"google_maps_call","arguments":{"queries":["nearby"]},"signature":"s"}"""),
+        (typeof(InteractionGoogleMapsResultDeltaData), """{"type":"google_maps_result","result":[{"places":[],"provider":true}],"signature":"s"}"""),
+        (typeof(InteractionGoogleSearchCallDeltaData), """{"type":"google_search_call","arguments":{"queries":["weather"]},"signature":"s"}"""),
+        (typeof(InteractionMcpServerToolCallDeltaData), """{"type":"mcp_server_tool_call","name":"search","server_name":"docs","arguments":{"query":"x"},"signature":"s"}"""),
+        (typeof(InteractionMcpServerToolResultDeltaData), """{"type":"mcp_server_tool_result","name":"search","server_name":"docs","result":{"content":[]},"signature":"s"}"""),
+        (typeof(InteractionProcessingCallDeltaData), """{"type":"processing_call","signature":"s"}"""),
+        (typeof(InteractionProcessingResultDeltaData), """{"type":"processing_result","signature":"s"}"""),
+        (typeof(InteractionRetrievalCallDeltaData), """{"type":"retrieval_call","arguments":{"query":"x"},"retrieval_type":"exa_ai_search","signature":"s"}"""),
+        (typeof(InteractionRetrievalResultDeltaData), """{"type":"retrieval_result","is_error":false,"signature":"s"}"""),
+        (typeof(InteractionUrlContextCallDeltaData), """{"type":"url_context_call","arguments":{"urls":["https://example.invalid"]},"signature":"s"}"""),
+        (typeof(InteractionUrlContextResultDeltaData), """{"type":"url_context_result","result":[{"url":"https://example.invalid","status":"success"}],"is_error":false,"signature":"s"}""")
     })
     {
         using var originalDelta = JsonDocument.Parse(deltaJson);
@@ -472,7 +543,10 @@ static void StreamingSseEvents()
 
         data: {"event_type":"interaction.status_update","interaction_id":"int-stream","status":"requires_action","event_id":"cursor-2","usage":{"total_tokens":12}}
 
-        data: {"event_type":"interaction.completed","interaction":{"id":"int-stream","model":"provider/gemini-flash-latest","status":"requires_action","steps":[{"type":"thought","signature":"signed-thought"},{"type":"function_call","id":"call-1","name":"weather","signature":"signed-call","arguments":{"city":"Paris"}}],"usage":{"total_tokens":12,"provider_usage":true}},"event_id":"cursor-3"}
+        data: {"event_type":"interaction.completed",
+        data: "interaction":{"id":"int-stream","model":"provider/gemini-flash-latest","status":"requires_action",
+        data: "steps":[{"type":"thought","signature":"signed-thought"},{"type":"function_call","id":"call-1","name":"weather","signature":"signed-call","arguments":{"city":"Paris"}}],
+        data: "usage":{"total_tokens":12,"provider_usage":true}},"event_id":"cursor-3"}
 
         """;
     var observer = new RecordingObserver();

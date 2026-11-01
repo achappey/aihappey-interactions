@@ -101,41 +101,59 @@ public static class HttpExtensions
         using var observed = observer?.ObserveStream(stream, resp.Content.Headers.ContentType?.MediaType ?? "text/event-stream");
         using var reader = new StreamReader(observed ?? stream);
 
+        var dataLines = new List<string>();
         string? line;
-        while (!ct.IsCancellationRequested &&
-               (line = await reader.ReadLineAsync(ct)) != null)
+        while ((line = await reader.ReadLineAsync(ct)) != null)
         {
-            if (line.Length == 0) continue; // keepalive
+            if (line.Length == 0)
+            {
+                if (TryParseSseData(dataLines, out var data))
+                    yield return DeserializeStreamEvent(data, providerId);
+                dataLines.Clear();
+                continue;
+            }
 
-            if (!line.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            if (line[0] == ':')
                 continue;
 
-            var data = line["data:".Length..].Trim();
-            if (data.Length == 0) continue;
-
-            InteractionStreamEventPart evt;
-            try
-            {
-                evt = JsonSerializer.Deserialize<InteractionStreamEventPart>(data)
-                    ?? throw new JsonException("Interaction stream event must be a non-null object.");
-            }
-            catch (JsonException ex)
-            {
-                throw new InvalidOperationException($"Failed to parse SSE json event: {data}", ex);
-            }
-
-            if (evt is InteractionCompletedEvent interactionCompleteEvent)
-            {
-                NormalizeInteractionModel(interactionCompleteEvent.Interaction, providerId);
-            }
-
-            if (evt is InteractionCreatedEvent interactionStartEvent)
-            {
-                NormalizeInteractionModel(interactionStartEvent.Interaction, providerId);
-            }
-
-            yield return evt;
+            if (line.StartsWith("data:", StringComparison.Ordinal))
+                dataLines.Add(line.Length > 5 && line[5] == ' ' ? line[6..] : line[5..]);
         }
+
+        if (TryParseSseData(dataLines, out var finalData))
+            yield return DeserializeStreamEvent(finalData, providerId);
+    }
+
+    private static bool TryParseSseData(List<string> dataLines, out string data)
+    {
+        data = string.Join('\n', dataLines);
+        return dataLines.Count > 0 && data.Length > 0;
+    }
+
+    private static InteractionStreamEventPart DeserializeStreamEvent(string data, string providerId)
+    {
+        InteractionStreamEventPart evt;
+        try
+        {
+            evt = JsonSerializer.Deserialize<InteractionStreamEventPart>(data)
+                ?? throw new JsonException("Interaction stream event must be a non-null object.");
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException($"Failed to parse SSE json event: {data}", ex);
+        }
+
+        switch (evt)
+        {
+            case InteractionCreatedEvent created:
+                NormalizeInteractionModel(created.Interaction, providerId);
+                break;
+            case InteractionCompletedEvent completed:
+                NormalizeInteractionModel(completed.Interaction, providerId);
+                break;
+        }
+
+        return evt;
     }
 
     private static async Task ThrowIfNotSuccess(HttpResponseMessage resp, CancellationToken ct)

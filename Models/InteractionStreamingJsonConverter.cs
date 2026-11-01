@@ -10,12 +10,28 @@ public sealed class InteractionContentDeltaJsonConverter : JsonConverter<Interac
         ["text"] = typeof(InteractionTextDeltaData),
         ["arguments_delta"] = typeof(InteractionArgumentsDeltaData),
         ["audio"] = typeof(InteractionAudioDeltaData),
+        ["code_execution_call"] = typeof(InteractionCodeExecutionCallDeltaData),
+        ["code_execution_result"] = typeof(InteractionCodeExecutionResultDeltaData),
         ["document"] = typeof(InteractionDocumentDeltaData),
+        ["file_search_call"] = typeof(InteractionFileSearchCallDeltaData),
+        ["file_search_result"] = typeof(InteractionFileSearchResultDeltaData),
         ["function_result"] = typeof(InteractionFunctionResultDeltaData),
+        ["google_maps_call"] = typeof(InteractionGoogleMapsCallDeltaData),
+        ["google_maps_result"] = typeof(InteractionGoogleMapsResultDeltaData),
+        ["google_search_call"] = typeof(InteractionGoogleSearchCallDeltaData),
+        ["google_search_result"] = typeof(InteractionGoogleSearchResultDeltaData),
         ["image"] = typeof(InteractionImageDeltaData),
+        ["mcp_server_tool_call"] = typeof(InteractionMcpServerToolCallDeltaData),
+        ["mcp_server_tool_result"] = typeof(InteractionMcpServerToolResultDeltaData),
+        ["processing_call"] = typeof(InteractionProcessingCallDeltaData),
+        ["processing_result"] = typeof(InteractionProcessingResultDeltaData),
+        ["retrieval_call"] = typeof(InteractionRetrievalCallDeltaData),
+        ["retrieval_result"] = typeof(InteractionRetrievalResultDeltaData),
         ["text_annotation_delta"] = typeof(InteractionTextAnnotationDeltaData),
         ["thought_summary"] = typeof(InteractionThoughtSummaryDeltaData),
         ["thought_signature"] = typeof(InteractionThoughtSignatureDeltaData),
+        ["url_context_call"] = typeof(InteractionUrlContextCallDeltaData),
+        ["url_context_result"] = typeof(InteractionUrlContextResultDeltaData),
         ["video"] = typeof(InteractionVideoDeltaData)
     };
 
@@ -29,8 +45,8 @@ public sealed class InteractionContentDeltaJsonConverter : JsonConverter<Interac
         if (root.ValueKind != JsonValueKind.Object)
             throw new JsonException("Interaction content delta must be an object.");
 
-        var type = root.TryGetProperty("type", out var typeProperty) ? typeProperty.GetString() : null;
-        var targetType = type is not null && DeltaTypes.TryGetValue(type, out var knownType)
+        var type = InteractionJson.ReadRequiredStringDiscriminator(root, "type");
+        var targetType = DeltaTypes.TryGetValue(type, out var knownType)
             ? knownType
             : typeof(InteractionUnknownContentDeltaData);
 
@@ -65,12 +81,10 @@ public sealed class InteractionStreamEventJsonConverter : JsonConverter<Interact
         if (root.ValueKind != JsonValueKind.Object)
             throw new JsonException("Interaction stream event must be an object.");
 
-        if (!root.TryGetProperty("event_type", out var typeProp) ||
-            typeProp.ValueKind != JsonValueKind.String ||
-            string.IsNullOrWhiteSpace(typeProp.GetString()))
+        var eventType = InteractionJson.ReadStringDiscriminator(root, "event_type");
+        if (string.IsNullOrWhiteSpace(eventType))
             throw new JsonException("Interaction stream event requires an event_type string.");
 
-        var eventType = typeProp.GetString()!;
         if (!EventTypes.TryGetValue(eventType, out var targetType))
             targetType = typeof(InteractionUnknownStreamEvent);
 

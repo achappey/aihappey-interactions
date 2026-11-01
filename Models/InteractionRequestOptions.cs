@@ -80,8 +80,10 @@ public sealed class InteractionEnvironmentValueJsonConverter : JsonConverter<Int
         return root.ValueKind switch
         {
             JsonValueKind.String => new InteractionEnvironmentValue(root.GetString()!),
-            JsonValueKind.Object when root.TryGetProperty("type", out var type) &&
-                                      string.Equals(type.GetString(), "remote", StringComparison.OrdinalIgnoreCase)
+            JsonValueKind.Object when string.Equals(
+                                          InteractionJson.ReadStringDiscriminator(root, "type"),
+                                          "remote",
+                                          StringComparison.OrdinalIgnoreCase)
                 => new InteractionEnvironmentValue(
                     root.Deserialize<InteractionRemoteEnvironment>(options)
                     ?? throw new JsonException("Remote environment configuration was empty.")),

@@ -26,4 +26,24 @@ public static class InteractionJson
             new InteractionStreamEventJsonConverter()
         }
     };
+
+    internal static string? ReadStringDiscriminator(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var value))
+            return null;
+
+        if (value.ValueKind != JsonValueKind.String)
+            throw new JsonException($"Interaction discriminator '{propertyName}' must be a string.");
+
+        return value.GetString();
+    }
+
+    internal static string ReadRequiredStringDiscriminator(JsonElement element, string propertyName)
+    {
+        var value = ReadStringDiscriminator(element, propertyName);
+        if (string.IsNullOrWhiteSpace(value))
+            throw new JsonException($"Interaction discriminator '{propertyName}' is required.");
+
+        return value;
+    }
 }

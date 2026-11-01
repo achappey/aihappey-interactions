@@ -19,17 +19,18 @@ References:
 | `InteractionRequest.Environment`, `Interaction.Environment` | `InteractionEnvironmentValue?` | Use a string reference or `InteractionRemoteEnvironment` configuration. |
 | `InteractionRequest.WebhookConfig`, `Interaction.WebhookConfig` | `InteractionWebhookConfig?` | Use `Uris` and `UserMetadata`. |
 | `InteractionGenerationConfig.ToolChoice` | `InteractionToolChoiceValue?` | Use a mode string or `InteractionToolChoiceConfiguration` with `AllowedTools`. |
+| `InteractionRequest.AgentConfig`, `Interaction.AgentConfig` | `InteractionAgentConfig?` | Current typed variants include dynamic, deep research, antigravity, and CodeMender. CodeMender's find/fix request payloads remain `JsonElement` to preserve their evolving shapes. |
 | `InteractionVideoContent.Processing`, `InteractionTranscriptionConfig.Mode` | `InteractionVideoProcessing?`, `InteractionTranscriptionMode?` | Use the documented string mode or typed configuration variants. |
 | Tool parameter, call-argument, and result payloads | `JsonElement?` | Assign arbitrary JSON with `JsonSerializer.SerializeToElement`. MCP headers use `Dictionary<string, string>?`. |
 | `InteractionModelOutputStep.Error` | `InteractionModelOutputError?` | Read numeric RPC `Code`, `Message`, and structured `Details`, distinct from interaction-level `InteractionErrorInfo`. |
-| `InteractionStepDeltaEvent.Delta` | `InteractionContentDeltaData?` | Handle typed text, arguments, thought, multimodal, annotation, and function-result deltas. Other variants retain their JSON in `InteractionUnknownContentDeltaData`. |
+| `InteractionStepDeltaEvent.Delta` | `InteractionContentDeltaData?` | Typed variants cover text, arguments, thought, multimodal, annotations, function and built-in tool calls/results, retrieval, and processing. Future variants retain their JSON in `InteractionUnknownContentDeltaData`. |
 | `Interaction.Steps` | `List<InteractionStep>?` | Tool calls, results, and thoughts are top-level steps. Content blocks are text, image, audio, document, or video; thought steps contain summary content and signatures. |
 
 Input accepts a string, a content block, content blocks, or steps. The role/content turn models, turn converters, thought content model, and unused step-selection constructor flags have been removed. Thoughts use `InteractionThoughtStep`. Unknown input arrays remain raw `JsonElement` values rather than being guessed into a known variant.
 
 ## Streaming
 
-Supported typed events are `interaction.created`, `interaction.status_update`, `step.start`, `step.delta`, `step.stop`, `interaction.completed`, and `error`, discriminated by `event_type`. Status changes, including `in_progress` and `requires_action`, are values of `interaction.status_update`, not separate event aliases. Step-stop events expose both `step_usage` and cumulative `usage`. Reasoning summaries, signatures, arguments, multimodal data, and usage metadata are preserved in step deltas.
+Supported typed events are `interaction.created`, `interaction.status_update`, `step.start`, `step.delta`, `step.stop`, `interaction.completed`, and `error`, discriminated by `event_type`. Status changes, including `in_progress` and `requires_action`, are values of `interaction.status_update`, not separate event aliases. Step-stop events expose both `step_usage` and cumulative `usage`. Reasoning summaries, signatures, arguments, multimodal data, and usage metadata are preserved in step deltas. The SSE reader joins multiple `data:` lines in a frame and dispatches a final frame at EOF.
 
 ## Provider passthrough
 
