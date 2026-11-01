@@ -25,9 +25,12 @@ public sealed class InteractionsInput
         Steps = steps;
     }
 
+    [Obsolete("Prefer the current Interactions API input forms: text, content blocks, or steps.")]
     public InteractionsInput(List<InteractionTurn> turns, bool useTurns)
     {
+#pragma warning disable CS0618
         Turns = turns;
+#pragma warning restore CS0618
     }
 
     public InteractionsInput(InteractionContent singleContent)
@@ -48,6 +51,7 @@ public sealed class InteractionsInput
  
     public List<InteractionStep>? Steps { get; init; }
 
+    [Obsolete("Prefer the current Interactions API input forms: text, content blocks, or steps.")]
     public List<InteractionTurn>? Turns { get; init; }
 
     public JsonElement? Raw { get; init; }
@@ -60,11 +64,14 @@ public sealed class InteractionsInput
  
     public bool IsSteps => Steps is not null;
 
+#pragma warning disable CS0618
     public bool IsTurns => Turns is not null;
+#pragma warning restore CS0618
 
     public bool IsRaw => Raw is not null && Raw.Value.ValueKind is not JsonValueKind.Null and not JsonValueKind.Undefined;
 }
 
+[Obsolete("Prefer the current Interactions API input forms: text, content blocks, or steps.")]
 public sealed class InteractionTurn
 {
     [JsonPropertyName("role")]

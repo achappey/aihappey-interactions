@@ -3,6 +3,21 @@ using System.Text.Json.Serialization;
 
 namespace AIHappey.Interactions;
 
+public sealed class InteractionModelOutputError
+{
+    [JsonPropertyName("code")]
+    public int? Code { get; set; }
+
+    [JsonPropertyName("message")]
+    public string? Message { get; set; }
+
+    [JsonPropertyName("details")]
+    public List<JsonElement>? Details { get; set; }
+
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
+}
+
 public sealed class InteractionAnnotation
 {
     [JsonPropertyName("type")]

@@ -3,9 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace AIHappey.Interactions;
 
-public sealed class InteractionFunctionCallContent : InteractionContent
+public sealed class InteractionFunctionCallStep : InteractionStep
 {
-    public InteractionFunctionCallContent()
+    public InteractionFunctionCallStep()
     {
         Type = "function_call";
     }
@@ -14,7 +14,7 @@ public sealed class InteractionFunctionCallContent : InteractionContent
     public string? Name { get; set; }
 
     [JsonPropertyName("arguments")]
-    public object? Arguments { get; set; }
+    public JsonElement? Arguments { get; set; }
 
     [JsonPropertyName("id")]
     public string? Id { get; set; }
@@ -24,9 +24,9 @@ public sealed class InteractionFunctionCallContent : InteractionContent
 
 }
 
-public sealed class InteractionCodeExecutionCallContent : InteractionContent
+public sealed class InteractionCodeExecutionCallStep : InteractionStep
 {
-    public InteractionCodeExecutionCallContent()
+    public InteractionCodeExecutionCallStep()
     {
         Type = "code_execution_call";
     }
@@ -41,9 +41,9 @@ public sealed class InteractionCodeExecutionCallContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionUrlContextCallContent : InteractionContent
+public sealed class InteractionUrlContextCallStep : InteractionStep
 {
-    public InteractionUrlContextCallContent()
+    public InteractionUrlContextCallStep()
     {
         Type = "url_context_call";
     }
@@ -58,9 +58,9 @@ public sealed class InteractionUrlContextCallContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionMcpServerToolCallContent : InteractionContent
+public sealed class InteractionMcpServerToolCallStep : InteractionStep
 {
-    public InteractionMcpServerToolCallContent()
+    public InteractionMcpServerToolCallStep()
     {
         Type = "mcp_server_tool_call";
     }
@@ -72,7 +72,7 @@ public sealed class InteractionMcpServerToolCallContent : InteractionContent
     public string? ServerName { get; set; }
 
     [JsonPropertyName("arguments")]
-    public object? Arguments { get; set; }
+    public JsonElement? Arguments { get; set; }
 
     [JsonPropertyName("id")]
     public string? Id { get; set; }
@@ -81,9 +81,9 @@ public sealed class InteractionMcpServerToolCallContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionGoogleSearchCallContent : InteractionContent
+public sealed class InteractionGoogleSearchCallStep : InteractionStep
 {
-    public InteractionGoogleSearchCallContent()
+    public InteractionGoogleSearchCallStep()
     {
         Type = "google_search_call";
     }
@@ -101,9 +101,9 @@ public sealed class InteractionGoogleSearchCallContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionFileSearchCallContent : InteractionContent
+public sealed class InteractionFileSearchCallStep : InteractionStep
 {
-    public InteractionFileSearchCallContent()
+    public InteractionFileSearchCallStep()
     {
         Type = "file_search_call";
     }
@@ -115,9 +115,9 @@ public sealed class InteractionFileSearchCallContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionGoogleMapsCallContent : InteractionContent
+public sealed class InteractionGoogleMapsCallStep : InteractionStep
 {
-    public InteractionGoogleMapsCallContent()
+    public InteractionGoogleMapsCallStep()
     {
         Type = "google_maps_call";
     }
@@ -132,9 +132,9 @@ public sealed class InteractionGoogleMapsCallContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionFunctionResultContent : InteractionContent
+public sealed class InteractionFunctionResultStep : InteractionStep
 {
-    public InteractionFunctionResultContent()
+    public InteractionFunctionResultStep()
     {
         Type = "function_result";
     }
@@ -152,13 +152,13 @@ public sealed class InteractionFunctionResultContent : InteractionContent
     public string? Signature { get; set; }
 
     [JsonPropertyName("result")]
-    public object? Result { get; set; }
+    public JsonElement? Result { get; set; }
 
 }
 
-public sealed class InteractionCodeExecutionResultContent : InteractionContent
+public sealed class InteractionCodeExecutionResultStep : InteractionStep
 {
-    public InteractionCodeExecutionResultContent()
+    public InteractionCodeExecutionResultStep()
     {
         Type = "code_execution_result";
     }
@@ -176,9 +176,9 @@ public sealed class InteractionCodeExecutionResultContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionUrlContextResultContent : InteractionContent
+public sealed class InteractionUrlContextResultStep : InteractionStep
 {
-    public InteractionUrlContextResultContent()
+    public InteractionUrlContextResultStep()
     {
         Type = "url_context_result";
     }
@@ -196,9 +196,9 @@ public sealed class InteractionUrlContextResultContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionGoogleSearchResultContent : InteractionContent
+public sealed class InteractionGoogleSearchResultStep : InteractionStep
 {
-    public InteractionGoogleSearchResultContent()
+    public InteractionGoogleSearchResultStep()
     {
         Type = "google_search_result";
     }
@@ -216,9 +216,9 @@ public sealed class InteractionGoogleSearchResultContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionMcpServerToolResultContent : InteractionContent
+public sealed class InteractionMcpServerToolResultStep : InteractionStep
 {
-    public InteractionMcpServerToolResultContent()
+    public InteractionMcpServerToolResultStep()
     {
         Type = "mcp_server_tool_result";
     }
@@ -236,12 +236,12 @@ public sealed class InteractionMcpServerToolResultContent : InteractionContent
     public string? Signature { get; set; }
 
     [JsonPropertyName("result")]
-    public object? Result { get; set; }
+    public JsonElement? Result { get; set; }
 }
 
-public sealed class InteractionFileSearchResultContent : InteractionContent
+public sealed class InteractionFileSearchResultStep : InteractionStep
 {
-    public InteractionFileSearchResultContent()
+    public InteractionFileSearchResultStep()
     {
         Type = "file_search_result";
     }
@@ -256,9 +256,9 @@ public sealed class InteractionFileSearchResultContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionGoogleMapsResultContent : InteractionContent
+public sealed class InteractionGoogleMapsResultStep : InteractionStep
 {
-    public InteractionGoogleMapsResultContent()
+    public InteractionGoogleMapsResultStep()
     {
         Type = "google_maps_result";
     }
@@ -273,15 +273,15 @@ public sealed class InteractionGoogleMapsResultContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionRetrievalCallContent : InteractionContent
+public sealed class InteractionRetrievalCallStep : InteractionStep
 {
-    public InteractionRetrievalCallContent()
+    public InteractionRetrievalCallStep()
     {
         Type = "retrieval_call";
     }
 
     [JsonPropertyName("arguments")]
-    public object? Arguments { get; set; }
+    public JsonElement? Arguments { get; set; }
 
     [JsonPropertyName("id")]
     public string? Id { get; set; }
@@ -293,9 +293,9 @@ public sealed class InteractionRetrievalCallContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionRetrievalResultContent : InteractionContent
+public sealed class InteractionRetrievalResultStep : InteractionStep
 {
-    public InteractionRetrievalResultContent()
+    public InteractionRetrievalResultStep()
     {
         Type = "retrieval_result";
     }
@@ -310,9 +310,9 @@ public sealed class InteractionRetrievalResultContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionProcessingCallContent : InteractionContent
+public sealed class InteractionProcessingCallStep : InteractionStep
 {
-    public InteractionProcessingCallContent()
+    public InteractionProcessingCallStep()
     {
         Type = "processing_call";
     }
@@ -324,9 +324,9 @@ public sealed class InteractionProcessingCallContent : InteractionContent
     public string? Signature { get; set; }
 }
 
-public sealed class InteractionProcessingResultContent : InteractionContent
+public sealed class InteractionProcessingResultStep : InteractionStep
 {
-    public InteractionProcessingResultContent()
+    public InteractionProcessingResultStep()
     {
         Type = "processing_result";
     }

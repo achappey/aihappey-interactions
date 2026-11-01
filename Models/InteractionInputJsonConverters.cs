@@ -5,6 +5,21 @@ namespace AIHappey.Interactions;
 
 public sealed class InteractionsInputJsonConverter : JsonConverter<InteractionsInput>
 {
+    private static readonly HashSet<string> ContentTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "text", "image", "audio", "document", "video"
+    };
+
+    private static readonly HashSet<string> StepTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "user_input", "model_output", "thought", "function_call", "code_execution_call",
+        "url_context_call", "mcp_server_tool_call", "google_search_call", "file_search_call",
+        "google_maps_call", "function_result", "code_execution_result", "url_context_result",
+        "google_search_result", "mcp_server_tool_result", "file_search_result",
+        "google_maps_result", "retrieval_call", "retrieval_result", "processing_call",
+        "processing_result"
+    };
+
     public override InteractionsInput? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var doc = JsonDocument.ParseValue(ref reader);
@@ -48,11 +63,13 @@ public sealed class InteractionsInputJsonConverter : JsonConverter<InteractionsI
             return;
         }
 
+#pragma warning disable CS0618
         if (value.IsTurns)
         {
             JsonSerializer.Serialize(writer, value.Turns, options);
             return;
         }
+#pragma warning restore CS0618
 
         if (value.IsRaw)
         {
@@ -65,12 +82,25 @@ public sealed class InteractionsInputJsonConverter : JsonConverter<InteractionsI
 
     private static InteractionsInput ParseArray(JsonElement root, JsonSerializerOptions options)
     {
+        if (root.GetArrayLength() == 0)
+            return new InteractionsInput(new List<InteractionContent>());
+
+        var isContent = true;
         var isSteps = true;
         var isTurns = true;
         foreach (var item in root.EnumerateArray())
         {
-            if (item.ValueKind != JsonValueKind.Object || !item.TryGetProperty("type", out _))
+            if (item.ValueKind == JsonValueKind.Object &&
+                item.TryGetProperty("type", out var typeProperty) &&
+                typeProperty.ValueKind == JsonValueKind.String)
             {
+                var type = typeProperty.GetString()!;
+                isContent &= ContentTypes.Contains(type);
+                isSteps &= StepTypes.Contains(type);
+            }
+            else
+            {
+                isContent = false;
                 isSteps = false;
             }
  
@@ -83,10 +113,15 @@ public sealed class InteractionsInputJsonConverter : JsonConverter<InteractionsI
         if (isSteps)
             return new InteractionsInput(root.Deserialize<List<InteractionStep>>(options) ?? [], true);
 
+#pragma warning disable CS0618
         if (isTurns)
             return new InteractionsInput(root.Deserialize<List<InteractionTurn>>(options) ?? [], true);
+#pragma warning restore CS0618
 
-        return new InteractionsInput(root.Deserialize<List<InteractionContent>>(options) ?? []);
+        if (isContent)
+            return new InteractionsInput(root.Deserialize<List<InteractionContent>>(options) ?? []);
+
+        return new InteractionsInput(root.Clone());
     }
 }
 

@@ -21,9 +21,11 @@ public sealed class InteractionGenerationConfig
     public int? MaxOutputTokens { get; set; }
 
     [JsonPropertyName("temperature")]
+    [Obsolete("Google marks temperature as deprecated in the current Interactions API schema.")]
     public double? Temperature { get; set; }
 
     [JsonPropertyName("top_p")]
+    [Obsolete("Google marks top_p as deprecated in the current Interactions API schema.")]
     public double? TopP { get; set; }
 
     [JsonPropertyName("speech_config")]
@@ -31,6 +33,7 @@ public sealed class InteractionGenerationConfig
     public List<InteractionSpeechConfig>? SpeechConfig { get; set; }
 
     [JsonPropertyName("image_config")]
+    [Obsolete("Google marks image_config as deprecated in the current Interactions API schema; use an image response_format.")]
     public InteractionImageConfig? ImageConfig { get; set; }
 
     [JsonPropertyName("transcription_config")]
@@ -40,7 +43,7 @@ public sealed class InteractionGenerationConfig
     public InteractionVideoConfig? VideoConfig { get; set; }
 
     [JsonPropertyName("tool_choice")]
-    public object? ToolChoice { get; set; }
+    public InteractionToolChoiceValue? ToolChoice { get; set; }
 
     [JsonExtensionData]
     public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
@@ -70,24 +73,28 @@ public sealed class InteractionSpeakerConfigCollection : List<InteractionSpeechC
 public sealed class InteractionTranscriptionConfig
 {
     [JsonPropertyName("adaptation_phrases")]
+    [Obsolete("Google marks adaptation_phrases as deprecated in the current Interactions API schema.")]
     public List<string>? AdaptationPhrases { get; set; }
 
     [JsonPropertyName("custom_vocabulary")]
     public List<string>? CustomVocabulary { get; set; }
 
     [JsonPropertyName("diarization_mode")]
+    [Obsolete("Google marks diarization_mode as deprecated in the current Interactions API schema.")]
     public string? DiarizationMode { get; set; }
 
     [JsonPropertyName("language_codes")]
     public List<string>? LanguageCodes { get; set; }
 
     [JsonPropertyName("language_hints")]
+    [Obsolete("Use LanguageCodes; Google marks language_hints as deprecated.")]
     public List<string>? LanguageHints { get; set; }
 
     [JsonPropertyName("mode")]
-    public object? Mode { get; set; }
+    public InteractionTranscriptionMode? Mode { get; set; }
 
     [JsonPropertyName("timestamp_granularities")]
+    [Obsolete("Google marks timestamp_granularities as deprecated in the current Interactions API schema.")]
     public List<string>? TimestampGranularities { get; set; }
 
     [JsonExtensionData]
