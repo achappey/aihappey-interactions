@@ -12,7 +12,6 @@ public static class InteractionJson
         Converters =
         {
             new InteractionsInputJsonConverter(),
-            new InteractionTurnContentJsonConverter(),
             new InteractionStepJsonConverter(),
             new InteractionContentJsonConverter(),
             new InteractionContentDeltaJsonConverter(),

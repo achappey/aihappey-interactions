@@ -55,16 +55,9 @@ public static class ProviderMetadataExtensions
 
         foreach (var toolEl in toolsEl.EnumerateArray())
         {
-            try
-            {
-                var def = toolEl.Deserialize<InteractionTool>(JsonSerializerOptions.Web);
-                if (def != null)
-                    result.Add(def);
-            }
-            catch
-            {
-                // ignore invalid tool entries (passthrough safety)
-            }
+            var def = toolEl.Deserialize<InteractionTool>(InteractionJson.Default)
+                ?? throw new JsonException("Interaction tool definition must be a non-null object.");
+            result.Add(def);
         }
 
         return result.Count > 0 ? result : null;

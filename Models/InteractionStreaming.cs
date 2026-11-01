@@ -114,8 +114,11 @@ public sealed class InteractionStepStopEvent : InteractionStreamEventPart
     [JsonPropertyName("event_id")]
     public string? EventId { get; set; }
  
-    [JsonPropertyName("status")]
-    public string? Status { get; set; }
+    [JsonPropertyName("step_usage")]
+    public InteractionUsage? StepUsage { get; set; }
+
+    [JsonPropertyName("usage")]
+    public InteractionUsage? Usage { get; set; }
 }
 
 public sealed class InteractionErrorEvent : InteractionStreamEventPart
@@ -193,10 +196,6 @@ public sealed class InteractionAudioDeltaData : InteractionContentDeltaData
 
     [JsonPropertyName("sample_rate")]
     public int? SampleRate { get; set; }
-
-    [JsonPropertyName("rate")]
-    [Obsolete("Use SampleRate; Google marks rate as deprecated.")]
-    public int? Rate { get; set; }
 
     [JsonPropertyName("channels")]
     public int? Channels { get; set; }

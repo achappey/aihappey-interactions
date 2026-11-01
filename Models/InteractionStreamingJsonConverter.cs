@@ -50,8 +50,6 @@ public sealed class InteractionStreamEventJsonConverter : JsonConverter<Interact
     {
         ["interaction.created"] = typeof(InteractionCreatedEvent),
         ["interaction.completed"] = typeof(InteractionCompletedEvent),
-        ["interaction.in_progress"] = typeof(InteractionStatusEvent),
-        ["interaction.requires_action"] = typeof(InteractionStatusEvent),
         ["interaction.status_update"] = typeof(InteractionStatusEvent),
         ["step.start"] = typeof(InteractionStepStartEvent),
         ["step.delta"] = typeof(InteractionStepDeltaEvent),
@@ -67,12 +65,13 @@ public sealed class InteractionStreamEventJsonConverter : JsonConverter<Interact
         if (root.ValueKind != JsonValueKind.Object)
             throw new JsonException("Interaction stream event must be an object.");
 
-        var eventType = root.TryGetProperty("event_type", out var typeProp)
-            ? typeProp.GetString()
-            : root.TryGetProperty("type", out var altTypeProp)
-                ? altTypeProp.GetString()
-                : null;
-        if (string.IsNullOrWhiteSpace(eventType) || !EventTypes.TryGetValue(eventType, out var targetType))
+        if (!root.TryGetProperty("event_type", out var typeProp) ||
+            typeProp.ValueKind != JsonValueKind.String ||
+            string.IsNullOrWhiteSpace(typeProp.GetString()))
+            throw new JsonException("Interaction stream event requires an event_type string.");
+
+        var eventType = typeProp.GetString()!;
+        if (!EventTypes.TryGetValue(eventType, out var targetType))
             targetType = typeof(InteractionUnknownStreamEvent);
 
         return JsonSerializer.Deserialize(root.GetRawText(), targetType, options) as InteractionStreamEventPart;
