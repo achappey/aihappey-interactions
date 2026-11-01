@@ -124,8 +124,8 @@ public sealed class InteractionResponseFormatJsonConverter : JsonConverter<Inter
         if (root.ValueKind != JsonValueKind.Object)
             throw new JsonException("Interaction response format must be an object.");
 
-        var type = root.TryGetProperty("type", out var typeProperty) ? typeProperty.GetString() : null;
-        var targetType = type is not null && FormatTypes.TryGetValue(type, out var knownType)
+        var type = InteractionJson.ReadRequiredStringDiscriminator(root, "type");
+        var targetType = FormatTypes.TryGetValue(type, out var knownType)
             ? knownType
             : typeof(InteractionUnknownResponseFormat);
 

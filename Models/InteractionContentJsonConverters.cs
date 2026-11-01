@@ -22,8 +22,8 @@ public sealed class InteractionContentJsonConverter : JsonConverter<InteractionC
         if (root.ValueKind != JsonValueKind.Object)
             throw new JsonException("Interaction content must be an object.");
 
-        var type = root.TryGetProperty("type", out var typeProp) ? typeProp.GetString() : null;
-        if (string.IsNullOrWhiteSpace(type) || !ContentTypes.TryGetValue(type, out var targetType))
+        var type = InteractionJson.ReadRequiredStringDiscriminator(root, "type");
+        if (!ContentTypes.TryGetValue(type, out var targetType))
             targetType = typeof(InteractionUnknownContent);
 
         return JsonSerializer.Deserialize(root.GetRawText(), targetType, options) as InteractionContent;
@@ -68,8 +68,8 @@ public sealed class InteractionStepJsonConverter : JsonConverter<InteractionStep
         if (root.ValueKind != JsonValueKind.Object)
             throw new JsonException("Interaction step must be an object.");
  
-        var type = root.TryGetProperty("type", out var typeProp) ? typeProp.GetString() : null;
-        if (string.IsNullOrWhiteSpace(type) || !StepTypes.TryGetValue(type, out var targetType))
+        var type = InteractionJson.ReadRequiredStringDiscriminator(root, "type");
+        if (!StepTypes.TryGetValue(type, out var targetType))
             targetType = typeof(InteractionUnknownStep);
  
         return JsonSerializer.Deserialize(root.GetRawText(), targetType, options) as InteractionStep;

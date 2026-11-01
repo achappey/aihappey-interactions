@@ -26,8 +26,8 @@ public sealed class InteractionToolJsonConverter : JsonConverter<InteractionTool
         if (root.ValueKind != JsonValueKind.Object)
             throw new JsonException("Interaction tool must be an object.");
 
-        var type = root.TryGetProperty("type", out var typeProp) ? typeProp.GetString() : null;
-        if (string.IsNullOrWhiteSpace(type) || !ToolTypes.TryGetValue(type, out var targetType))
+        var type = InteractionJson.ReadRequiredStringDiscriminator(root, "type");
+        if (!ToolTypes.TryGetValue(type, out var targetType))
             targetType = typeof(InteractionUnknownTool);
 
         return JsonSerializer.Deserialize(root.GetRawText(), targetType, options) as InteractionTool;
@@ -104,9 +104,11 @@ public sealed class InteractionAgentConfigJsonConverter : JsonConverter<Interact
         if (root.ValueKind != JsonValueKind.Object)
             throw new JsonException("Interaction agent_config must be an object.");
 
-        var type = root.TryGetProperty("type", out var typeProp) ? typeProp.GetString() : null;
-        var targetType = type?.ToLowerInvariant() switch
+        var type = InteractionJson.ReadRequiredStringDiscriminator(root, "type");
+        var targetType = type.ToLowerInvariant() switch
         {
+            "antigravity" => typeof(InteractionAntigravityAgentConfig),
+            "code-mender" => typeof(InteractionCodeMenderAgentConfig),
             "deep-research" => typeof(InteractionDeepResearchAgentConfig),
             "dynamic" => typeof(InteractionDynamicAgentConfig),
             _ => typeof(InteractionUnknownAgentConfig)
